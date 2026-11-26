@@ -277,7 +277,7 @@ button {
     -webkit-overflow-scrolling: touch;
     clip-path: inset(0 0 100% 0);
     visibility: hidden;
-    transition: clip-path 0.75s var(--ease-io) 0.15s, visibility 0s linear 0.9s;
+    transition: clip-path 0.8s var(--ease-io) 0.25s, visibility 0s linear 1.05s;  /* Schließen: etwas ruhiger, aber schneller als das Öffnen */
   }
   .menu-open .nav {
     clip-path: inset(0 0 0 0);
@@ -301,7 +301,7 @@ button {
     background: var(--line);
     transform: scaleX(0);
     transform-origin: left;
-    transition: transform 0.4s var(--ease);
+    transition: transform 0.55s var(--ease-io);
   }
   .nav > ul li:first-child::before { top: 0; bottom: auto; background: var(--text); }
 
@@ -327,7 +327,7 @@ button {
     letter-spacing: 0.16em;
     color: var(--muted);
     opacity: 0;
-    transition: opacity 0.3s;
+    transition: opacity 0.4s;
   }
   /* Pfeil rechts, erscheint bei Berührung/Hover */
   .nav > ul a::after {
@@ -359,7 +359,7 @@ button {
   .nav__text {
     display: inline-block;
     transform: translateY(135%);
-    transition: transform 0.35s var(--ease), color 0.25s;
+    transition: transform 0.55s var(--ease-io), color 0.25s;
   }
   .nav > ul a:hover .nav__text,
   .nav > ul a:active .nav__text { color: var(--muted); }
@@ -390,7 +390,7 @@ button {
     color: var(--muted);
     opacity: 0;
     transform: translateY(12px);
-    transition: opacity 0.25s, transform 0.25s;
+    transition: opacity 0.4s, transform 0.4s;
   }
   .nav__foot .label { grid-column: 1 / -1; }
   .nav__foot ul { display: flex; flex-direction: column; gap: 0.25rem; text-align: right; }
