@@ -15,14 +15,42 @@
 
   /* --- Mobiles Menü ----------------------------------------------------- */
   var toggle = document.querySelector('.menu-toggle');
+  var nav = document.getElementById('hauptmenue');
+  var behind = [document.querySelector('main'), document.querySelector('.site-footer'), document.querySelector('.skip-link')];
+
   function setMenu(open) {
     document.body.classList.toggle('menu-open', open);
+    root.classList.toggle('menu-lock', open);
     toggle.setAttribute('aria-expanded', String(open));
-    toggle.textContent = open ? 'Schließen' : 'Menü';
+    toggle.setAttribute('aria-label', open ? 'Menü schließen' : 'Menü öffnen');
+    // Inhalt hinter dem Menü für Tastatur und Screenreader sperren
+    behind.forEach(function (el) { if (el) el.inert = open; });
+    if (open) nav.scrollTop = 0;
   }
-  if (toggle) {
+
+  if (toggle && nav) {
+    // Linktexte für die Einblend-Animation verpacken, Reihenfolge für die Staffelung merken
+    var items = nav.querySelectorAll(':scope > ul > li');
+    items.forEach(function (li, i) {
+      li.style.setProperty('--i', i);
+      var a = li.querySelector('a');
+      if (a) a.innerHTML = '<span class="nav__text">' + a.innerHTML + '</span>';
+    });
+
+    // Fußzeile im mobilen Menü (auf dem Desktop ausgeblendet)
+    var foot = document.createElement('div');
+    foot.className = 'nav__foot';
+    foot.innerHTML =
+      '<p class="label">Malerei · Holzschnitt · Collage</p>' +
+      '<p>Ateliergemeinschaft<br>Leske-Höft-Winter<br>Bad Kreuznach</p>' +
+      '<ul><li><a href="impressum.html">Impressum</a></li><li><a href="datenschutz.html">Datenschutz</a></li></ul>';
+    nav.appendChild(foot);
+
     toggle.addEventListener('click', function () {
       setMenu(!document.body.classList.contains('menu-open'));
+    });
+    nav.addEventListener('click', function (e) {
+      if (e.target.closest('a')) setMenu(false);
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && document.body.classList.contains('menu-open')) {
@@ -81,6 +109,19 @@
   var count = dialog.querySelector('.lightbox__count');
   var current = 0;
   var opener = null;
+  var openedAt = 0;
+
+  /* Zoom in der Großansicht verhindern bzw. zurücksetzen:
+     Ein versehentlicher Doppeltipp hat sonst die ganze Seite vergrößert,
+     und weil die Bildfläche Gesten abfängt, ließ sich das nicht mehr zurückzoomen. */
+  var viewport = document.querySelector('meta[name="viewport"]');
+  var viewportDefault = viewport ? viewport.getAttribute('content') : '';
+  function lockZoom(on) {
+    if (!viewport) return;
+    viewport.setAttribute('content', on
+      ? 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'
+      : viewportDefault);
+  }
 
   function pad(n) { return n < 10 ? '0' + n : String(n); }
 
@@ -105,7 +146,9 @@
   frames.forEach(function (frame, i) {
     frame.addEventListener('click', function () {
       opener = frame;
+      openedAt = Date.now();
       show(i);
+      lockZoom(true);
       root.classList.add('no-scroll');
       dialog.showModal();
     });
@@ -116,9 +159,29 @@
     btn.addEventListener('click', function () { show(current + Number(btn.getAttribute('data-step'))); });
   });
   stage.addEventListener('click', function (e) {
-    if (e.target === stage) dialog.close();
+    // zweiter Tipp eines Doppeltipps direkt nach dem Öffnen schließt nicht gleich wieder
+    if (e.target === stage && Date.now() - openedAt > 450) dialog.close();
   });
+
+  // Doppeltipp abfangen; schnelles Tippen auf die Pfeile zählt trotzdem
+  var lastTap = 0;
+  dialog.addEventListener('touchend', function (e) {
+    var now = Date.now();
+    if (now - lastTap < 350 && e.touches.length === 0) {
+      e.preventDefault();
+      var btn = e.target.closest && e.target.closest('button');
+      if (btn) btn.click();
+    }
+    lastTap = now;
+  }, { passive: false });
+  dialog.addEventListener('dblclick', function (e) { e.preventDefault(); });
+  // iOS Safari: Pinch-Zoom in der Großansicht unterbinden
+  ['gesturestart', 'gesturechange'].forEach(function (type) {
+    dialog.addEventListener(type, function (e) { e.preventDefault(); });
+  });
+
   dialog.addEventListener('close', function () {
+    lockZoom(false);
     root.classList.remove('no-scroll');
     image.removeAttribute('src');
     if (opener) opener.focus();
@@ -130,7 +193,9 @@
 
   // Wischgesten
   var startX = null;
-  stage.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; }, { passive: true });
+  stage.addEventListener('touchstart', function (e) {
+    startX = e.touches.length === 1 ? e.touches[0].clientX : null;
+  }, { passive: true });
   stage.addEventListener('touchend', function (e) {
     if (startX === null) return;
     var dx = e.changedTouches[0].clientX - startX;
