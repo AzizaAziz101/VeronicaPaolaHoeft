@@ -34,7 +34,7 @@
     items.forEach(function (li, i) {
       li.style.setProperty('--i', i);
       var a = li.querySelector('a');
-      if (a) a.innerHTML = '<span class="nav__text">' + a.innerHTML + '</span>';
+      if (a) a.innerHTML = '<span class="nav__mask"><span class="nav__text">' + a.innerHTML + '</span></span>';
     });
 
     // Fußzeile im mobilen Menü (auf dem Desktop ausgeblendet)

@@ -348,9 +348,17 @@ button {
   .nav > ul a:active::after { opacity: 1; transform: none; }
   .nav > ul a:focus-visible { outline-offset: -1px; }
 
+  /* Maske eng um die Schrift: Text verschwindet vor dem Ein- und nach dem Ausblenden vollständig */
+  .nav__mask {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    padding: 0.08em 0.12em 0.14em 0;   /* Platz für Unterlängen und Kursive */
+    margin: -0.08em 0 -0.14em;
+  }
   .nav__text {
     display: inline-block;
-    transform: translateY(110%);
+    transform: translateY(135%);
     transition: transform 0.35s var(--ease), color 0.25s;
   }
   .nav > ul a:hover .nav__text,
@@ -408,8 +416,9 @@ button {
   .nav > ul a { font-size: 1.5rem; padding-block: 0.4rem; }
 }
 
-html.menu-lock,
-html.menu-lock body { overflow: hidden; }
+/* nur html sperren – overflow am body würde den sticky Header an den Seitenanfang
+   verschieben, dann wäre der Schließen-Knopf weiter unten auf der Seite unsichtbar */
+html.menu-lock { overflow: hidden; }
 
 /* --- Startseite --------------------------------------------------------- */
 
